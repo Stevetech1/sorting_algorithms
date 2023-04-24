@@ -1,83 +1,124 @@
 #include "sort.h"
-#include <stdio.h>
+
 
 /**
- * bitonic_compare - sort the values in a sub-array with respect to
- * the Bitonic sort algorithm
- * @up: direction of sorting
- * @array: sub-array to sort
- * @size: size of the sub-array
- *
- * Return: void
+ * printcheck - print a range
+ * @array: The array to print
+ * @r1: Less range
+ * @r2: Final range
+ * Return: Nothing
  */
-void bitonic_compare(char up, int *array, size_t size)
+void printcheck(int *array, int r1, int r2)
 {
-	size_t i, dist;
-	int swap;
+	int i;
 
-	dist = size / 2;
-	for (i = 0; i < dist; i++)
+	for (i = r1; i <= r2; i++)
 	{
-		if ((array[i] > array[i + dist]) == up)
+		if (i > r1)
+			printf(", ");
+		printf("%d", array[i]);
+	}
+	printf("\n");
+}
+
+/**
+ * compAndSwap - swap two elements in an array
+ * @a: THe array to change the values
+ * @i: A index
+ * @j: Another index
+ * @dir: Direction of the array
+ * Return: Nothing
+ */
+void compAndSwap(int *a, int i, int j, int dir)
+{
+	int aux;
+
+	if (dir == (a[i] > a[j]))
+	{
+		aux = a[i];
+		a[i] = a[j];
+		a[j] = aux;
+	}
+}
+
+/**
+ * bitonicMerge - swap the elements to sort
+ * @a: Array to sort
+ * @low: The low element in the range to sort
+ * @cnt: The size of the range to sort
+ * @dir: Indicate which half are manage
+ * @int_size: The size of the all array
+ * Return: Nothing
+ */
+void bitonicMerge(int *a, int low, int cnt, int dir, const int int_size)
+{
+	int k = cnt, i = low;
+
+	if (cnt > 1)
+	{
+		k = cnt / 2;
+
+		for (i = low; i < low + k; i++)
+			compAndSwap(a, i, i + k, dir);
+
+		bitonicMerge(a, low, k, dir, int_size);
+		bitonicMerge(a, low + k, k, dir, int_size);
+	}
+}
+
+/**
+ * bitonicSort - segmentate the array
+ * @a: The array to sort
+ * @low: The lowest element in each range
+ * @cnt: Size of the range to sort
+ * @dir: Indicate which half are manage
+ * @int_size: The size of the all array
+ * Return: Nothing
+ */
+void bitonicSort(int *a, int low, int cnt, int dir, const int int_size)
+{
+	int k = cnt;
+
+	if (cnt > 1)
+	{
+		if (dir == 1)
+			printf("Merging [%d/%d] (UP):\n", cnt, int_size);
+		if (dir == 0)
+			printf("Merging [%d/%d] (DOWN):\n", cnt, int_size);
+		printcheck(a, low, low + k - 1);
+
+		k = cnt / 2;
+		bitonicSort(a, low, k, 1, int_size);
+
+		bitonicSort(a, low + k, k, 0, int_size);
+
+		bitonicMerge(a, low, cnt, dir, int_size);
+		if (dir == 1)
 		{
-			swap = array[i];
-			array[i] = array[i + dist];
-			array[i + dist] = swap;
+			printf("Result [%d/%d] (UP):\n", cnt, int_size);
+			printcheck(a, low, low + 2 * k - 1);
+		}
+		if (dir == 0)
+		{
+			printf("Result [%d/%d] (DOWN):\n", cnt, int_size);
+			printcheck(a, low, low + 2 * k - 1);
 		}
 	}
 }
 
 /**
- * bitonic_merge - recursive function that merges two sub-arrays
- * @up: direction of sorting
- * @array: sub-array to sort
- * @size: size of the sub-array
- *
- * Return: void
- */
-void bitonic_merge(char up, int *array, size_t size)
-{
-	if (size < 2)
-		return;
-	bitonic_compare(up, array, size);
-	bitonic_merge(up, array, size / 2);
-	bitonic_merge(up, array + (size / 2), size / 2);
-}
-
-/**
- * bit_sort - recursive function using the Bitonic sort algorithm
- * @up: direction of sorting
- * @array: sub-array to sort
- * @size: size of the sub-array
- * @t: total size of the original array
- *
- * Return: void
- */
-void bit_sort(char up, int *array, size_t size, size_t t)
-{
-	if (size < 2)
-		return;
-	printf("Merging [%lu/%lu] (%s):\n", size, t, (up == 1) ? "UP" : "DOWN");
-	print_array(array, size);
-	bit_sort(1, array, size / 2, t);
-	bit_sort(0, array + (size / 2), size / 2, t);
-	bitonic_merge(up, array, size);
-	printf("Result [%lu/%lu] (%s):\n", size, t, (up == 1) ? "UP" : "DOWN");
-	print_array(array, size);
-
-}
-
-/**
- * bitonic_sort - sorts an array of integers in ascending order using
- * the Bitonic sort algorithm
- * @array: array to sort
- * @size: size of the array
- *
- * Return: void
+ * bitonic_sort - call the sort function
+ * @array: The array to sort
+ * @size: Size of the array
+ * Return: Nothing
  */
 void bitonic_sort(int *array, size_t size)
 {
-	if (array == NULL || size < 2)
+	int up = 1;
+	const int int_size = (int)size;
+
+	if (size < 2 || !array)
 		return;
-	bit_sort(1, array, size, size);
+
+	bitonicSort(array, 0, (int)size, up, int_size);
 }
