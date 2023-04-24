@@ -49,7 +49,7 @@ size_t partition(int *array, ssize_t lo, ssize_t hi, size_t size)
  */
 void quicksort(int *array, ssize_t lo, ssize_t hi, size_t size)
 {
-	ssize_t pivot;
+	size_t pivot;
 
 	if (lo < hi)
 	{
